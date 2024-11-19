@@ -1,5 +1,7 @@
+import Header from "@/components/Header";
 import type { Metadata } from "next";
-// import "./globals.css";
+import "@/globals.css";
+import { GlobalProvider } from "@/context/AppContext";
 
 export const metadata: Metadata = {
   title: "Cypher Notes | Secured space for your thoughts ",
@@ -14,7 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <GlobalProvider>
+          <Header />
+          <main>{children}</main>
+        </GlobalProvider>
+      </body>
     </html>
   );
 }
