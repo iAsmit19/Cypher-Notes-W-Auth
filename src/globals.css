@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'sf pro';
-  src: url('/fonts/sf-pro.ttf') format('truetype');
+  font-family: "sf pro";
+  src: url("/fonts/sf-pro.ttf") format("truetype");
   font-weight: 100 400 800;
   font-style: normal;
 }
@@ -33,7 +33,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'sf pro';
+  font-family: "sf pro";
   font-weight: 400;
 }
 
@@ -41,6 +41,22 @@ html,
 body {
   background-color: var(--bg);
   color: var(--text);
+}
+
+/* Auth Page */
+.cy_auth {
+  background-color: #0a0a0a;
+  height: 100vh;
+  width: 100%;
+}
+
+.cy_auth_cont {
+  background-color: rgb(30, 30, 30);
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Header */
@@ -126,7 +142,7 @@ header {
 }
 
 .cy_link::before {
-  content: '';
+  content: "";
   background-color: #fff;
   height: 1px;
   width: 0%;

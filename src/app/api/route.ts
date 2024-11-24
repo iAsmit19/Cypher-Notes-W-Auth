@@ -1,16 +1,28 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/db";
 import { MongoClient, Db, Document, ObjectId } from "mongodb";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./auth/[...nextauth]/route";
 
 // GET Request Handler
 // Gets all the notes from the database
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
     // connect to the database
     const client: MongoClient = await clientPromise;
     const db: Db = client.db("cypher-notes");
 
-    const notes: Document[] = await db.collection("notes").find({}).toArray();
+    const notes: Document[] = await db
+      .collection("notes")
+      .find({ userId })
+      .toArray();
 
     console.log("Fetched notes: ", notes);
 
@@ -27,11 +39,26 @@ export async function GET() {
 
 // POST Request Handler
 // Adds a new note to the database
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
 
-    const { title, content } = body;
+declare module "next-auth" {
+  interface User {
+    id: string;
+  }
+
+  interface Session {
+    user: User;
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { title, content } = await request.json();
+    const userId = session.user.id;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -46,6 +73,7 @@ export async function POST(request: Request) {
     const time = new Date();
 
     const result = await db.collection("notes").insertOne({
+      userId,
       title,
       content,
       createdAt: time,

@@ -1,7 +1,7 @@
-import Header from "@/components/Header";
 import type { Metadata } from "next";
 import "@/globals.css";
 import { GlobalProvider } from "@/context/AppContext";
+import LayoutContent from "./LayoutContent";
 
 export const metadata: Metadata = {
   title: "Cypher Notes | Secured space for your thoughts ",
@@ -18,8 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <GlobalProvider>
-          <Header />
-          <main>{children}</main>
+          <LayoutContent>{children}</LayoutContent>
         </GlobalProvider>
       </body>
     </html>

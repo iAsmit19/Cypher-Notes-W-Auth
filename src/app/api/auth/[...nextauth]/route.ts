@@ -2,6 +2,7 @@ import clientPromise from "@/lib/db";
 import { Db, MongoClient } from "mongodb";
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 
 export const authOptions: AuthOptions = {
   session: {
@@ -19,9 +20,8 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // Validdating the inputs
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
+          return null; // Return null instead of throwing an error to prevent exposing sensitive info
         }
 
         const { email, password } = credentials;
@@ -29,44 +29,34 @@ export const authOptions: AuthOptions = {
         const client: MongoClient = await clientPromise;
         const db: Db = client.db("cypher-notes");
 
-        // checking if the user exists
+        // Check if the user exists
         const existingUser = await db.collection("user").findOne({ email });
-
-        if (existingUser) {
-          // Login: check passwords (this must be hashed in apps)
-          if (existingUser.password === password) {
-            return {
-              id: existingUser._id.toString(),
-              name: existingUser.name,
-              email: existingUser.email,
-            };
-          } else {
-            // Resigner the new user
-            const newUser = {
-              name: email.split("@")[0],
-              email,
-              password, // Hash this in production
-            };
-
-            const result = await db.collection("user").insertOne(newUser);
-
-            return {
-              id: result.insertedId.toString(),
-              name: newUser.name,
-              email: newUser.email,
-            };
-          }
+        if (!existingUser) {
+          return null; // Return null if no user is found (prevents info leakage)
         }
 
-        const user = { id: "1", name: "asmit", email: "test@cypher.com" };
-
-        if (email === user.email && password === "password") {
-          return user;
+        // Validate the password using bcrypt
+        const isPasswordValid = await bcrypt.compare(
+          password,
+          existingUser.password
+        );
+        if (!isPasswordValid) {
+          return null; // Return null for invalid credentials
         }
-        return null;
+
+        // Return the user object for next-auth session
+        return {
+          id: existingUser._id.toString(),
+          name: existingUser.name,
+          email: existingUser.email,
+        };
       },
     }),
   ],
+
+  pages: {
+    signIn: "/auth/login",
+   },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
