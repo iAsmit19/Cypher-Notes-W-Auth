@@ -29,7 +29,7 @@ interface GlobaContextType {
   notes: Note[];
   setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
   fetchNotes: () => Promise<void>;
-  addNote: (note: Note) => Promise<void>;
+  // addNote: (note: Note) => Promise<void>;
 }
 
 const GlobalContext = createContext<GlobaContextType | undefined>(undefined);
@@ -78,25 +78,25 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Adding a new note
-  const addNote = async (newNote: { title: string; content: string }) => {
-    try {
-      const response = await fetch("/api", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newNote),
-      });
+  // const addNote = async (newNote: { title: string; content: string }) => {
+  //   try {
+  //     const response = await fetch("/api", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(newNote),
+  //     });
 
-      const addedNote = await response.json();
+  //     const addedNote = await response.json();
 
-      if (response.ok) {
-        setNotes((prevNote) => [...prevNote, addedNote]);
-      }
-    } catch (error) {
-      console.error("Error adding note:", error);
-    }
-  };
+  //     if (response.ok) {
+  //       setNotes((prevNote) => [...prevNote, addedNote]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error adding note:", error);
+  //   }
+  // };
 
   useEffect(() => {
     fetchNotes();
@@ -115,7 +115,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         notes,
         setNotes,
         fetchNotes,
-        addNote,
+        // addNote,
       }}
     >
       {children}
