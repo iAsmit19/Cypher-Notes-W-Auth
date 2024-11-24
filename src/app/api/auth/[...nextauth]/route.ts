@@ -1,9 +1,10 @@
-import clientPromise from "@/lib/db";
-import { Db, MongoClient } from "mongodb";
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import clientPromise from "@/lib/db";
+import { Db, MongoClient } from "mongodb";
 import bcrypt from "bcryptjs";
 
+// Define the NextAuth configuration
 export const authOptions: AuthOptions = {
   session: {
     strategy: "jwt",
@@ -21,7 +22,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null; // Return null instead of throwing an error to prevent exposing sensitive info
+          return null; // Return null if credentials are invalid
         }
 
         const { email, password } = credentials;
@@ -29,10 +30,10 @@ export const authOptions: AuthOptions = {
         const client: MongoClient = await clientPromise;
         const db: Db = client.db("cypher-notes");
 
-        // Check if the user exists
+        // Check if the user exists in the database
         const existingUser = await db.collection("user").findOne({ email });
         if (!existingUser) {
-          return null; // Return null if no user is found (prevents info leakage)
+          return null; // User not found
         }
 
         // Validate the password using bcrypt
@@ -41,10 +42,10 @@ export const authOptions: AuthOptions = {
           existingUser.password
         );
         if (!isPasswordValid) {
-          return null; // Return null for invalid credentials
+          return null; // Invalid password
         }
 
-        // Return the user object for next-auth session
+        // Return the user object for session handling
         return {
           id: existingUser._id.toString(),
           name: existingUser.name,
@@ -53,13 +54,11 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
-
   pages: {
-    signIn: "/auth/login",
-   },
+    signIn: "/auth/login", // Redirect to custom sign-in page
+  },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+// Default export handler for NextAuth API routes
+export default NextAuth(authOptions);
